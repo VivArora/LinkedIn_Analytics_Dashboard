@@ -54,7 +54,7 @@ if li_file:
 
 
         df_bench = pd.DataFrame.from_dict(benchmark_data)
-        df_test = st.session_state["dfx"].merge(df_bench, on="Type content", how="left")
+        df_test = st.session_state.dfx.merge(df_bench, on="Type content", how="left")
 
         df_test["Weergaven_result"] = df_test["Weergaven"]/df_test["B_Weergaven_LI"]
         df_test["CTR_result"] = df_test["Doorklikfrequentie (CTR)"]/df_test["B_Avg CTR_ALT"]
