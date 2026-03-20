@@ -7,6 +7,9 @@ import streamlit as st
 st.set_page_config(page_title="Linkedin Dashboard", layout="wide")
 ## TYPE CONTENT AND ADD FOR CATEGORY
 
+if "dfx" not in st.session_state:
+    st.session_state.dfx = None
+
 li_file = st.file_uploader(label="add linkedin analytics file")
 
 if li_file:
