@@ -24,10 +24,10 @@ if li_file:
             edited_df = st.data_editor(df)
 
         if st.button(label="Submit changes"):
-<<<<<<< HEAD
+
             if "dfx" not in st.session_state:
                 st.session_state.dfx = edited_df 
-            st.success("My whiiiiife")
+            st.success("Data loaded")
 
 
         # if "dfx" in st.session_state:
