@@ -106,6 +106,12 @@ def calc_gold_metrics(df, df2):
     except Exception as e:
         st.error(e)
 
+def gold_categ_BC(df):
+    try:
+        df_categ_res = df.groupby("Category")["post_score"].mean()
+        st.bar_chart(df_categ_res)
+    except Exception as e:
+        st.error(e)
 
 def main():
     st.title("SDG LinkedIn Dashboard")
@@ -134,11 +140,9 @@ def main():
             calc_gold_metrics(st.session_state.df_main, st.session_state.df_calc )
 
         if st.session_state.df_calc is not None:
-            try:
-                df_categ_res = st.session_state.df_calc.groupby("Category")["post_score"].mean()
-                st.bar_chart(df_categ_res)
-            except Exception as e:
-                pass
+            st.subheader("Post score per Category")
+            gold_categ_BC(st.session_state.df_calc)
+
         
 
         
