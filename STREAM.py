@@ -42,6 +42,9 @@ STEPS
 import pandas as pd
 import streamlit as st
 
+
+# DEFINE VARIABLES
+
 benchmark_data = {
     "Type content":["Video", "Text"],
     "B_Weergaven_LI":[355, 300],
@@ -51,96 +54,108 @@ benchmark_data = {
 
 df_bench = pd.DataFrame(benchmark_data)
 
-st.set_page_config(page_title="Linkedin Dashboard", layout="wide")
-## TYPE CONTENT AND ADD FOR CATEGORY
 
-
-
-
-if "dfx" not in st.session_state:
-    st.session_state.dfx = None
-
-li_file = st.file_uploader(label="add linkedin analytics file")
-
-if li_file:
-    #st.success("file loaded")
+# DEFINE FUNCTIONS
+# reads raw data and 
+def load_raw(file):
     try:
-        #st.write("starting load")
-        df = pd.read_excel(li_file, 1, header=1)
+        df = pd.read_excel(file, 1, header=1)
         df.drop(columns=["Link plaatsen","Weergaven.1", "Soort bijdrage", "Campagnenaam", "Geplaatst door", "Begindatum van campagne", "Einddatum van campagne", "Doelgroep", "Weergaven buiten site"], inplace=True)
         df["Aangemaakt"] = pd.to_datetime(df["Aangemaakt"],  format="%m/%d/%Y")
         df["Type content"] = df["Type content"].fillna("Text")
         df["Category"] = "Enter Category"
         df = df[["Titel bijdrage", "Type content", "Category", "Weergaven", "Doorklikfrequentie (CTR)", "Interactiepercentage", "Aangemaakt"]]
-        #st.success("df loaded")
-        with st.expander(label="Enter Type content and categorize each post", ):
-            # FEATURE
-            ## read the date range and create filters for month and week
-            # [["Aangemaakt","Titel bijdrage", "Type content", "Category"]]
-            edited_df = st.data_editor(df, hide_index=True, )
-        
-        if st.button("Submit changes"):
-            st.session_state.dfx = edited_df
-            st.success("Data loaded")
 
-
-
-        df_test = None
-
-        if st.session_state.dfx is not None:
-            df_test = st.session_state.dfx.merge(df_bench, on="Type content", how="left")
-
-        
-        try:
-            df_test["Weergaven_result"] = df_test["Weergaven"]/df_test["B_Weergaven_LI"]
-            df_test["CTR_result"] = df_test["Doorklikfrequentie (CTR)"]/df_test["B_Avg CTR_ALT"]
-            df_test["NTR_result"] = df_test["Interactiepercentage"]/df_test["B_engagement rate_LI"]
-            df_test["post_score"] = round(((0.33*df_test["Weergaven_result"]) + (0.33*df_test["NTR_result"]) + (0.33*df_test["CTR_result"])), 2)
-
-            df_results = df_test[["Titel bijdrage", "Aangemaakt", "Type content", "Category", "Weergaven_result", "CTR_result","NTR_result","post_score"]]
-
-            total_views = st.session_state.dfx["Weergaven"].sum()
-            avg_CTR = st.session_state.dfx["Doorklikfrequentie (CTR)"].mean()
-            avg_NTR = st.session_state.dfx["Interactiepercentage"].mean()
-            avg_score = df_results["post_score"].median()
-
-
-            met1, met2, met3, met4 = st.columns(4)
-
-            with met1:
-                st.metric(label='Total views', value=total_views)
-            with met2:
-                st.metric(label='Avg CTR', value=round(avg_CTR, 2))
-            with met3:
-                st.metric(label='Avg NTR', value=round(avg_NTR, 2))
-            with met4:
-                st.metric(label='Median post score', value=round(avg_score, 2))
-
-
-            df_categ_res = df_results.groupby("Category")["post_score"].mean()
-            st.bar_chart(df_categ_res)
-        except Exception as e:
-            st.error(f'error: {e}')
-        # txt_cat_rest = df_res_text.groupby(by=["Category"])["post_score"].mean()
-        # st.dataframe(txt_cat_rest)
-        
-
-
-
-        # tab1, tab2 = st.columns(2)
-        # with tab1:
-        #     df_res_text = df_results.query("Type content == 'Text'")
-        #     txt_cat_rest = df_res_text.groupby(by=["Category"])["post_score"].mean()
-        #     st.dataframe(txt_cat_rest)
-        # with tab2:
-        #     df_res_vid = df_results.query("Type content == 'Video'")
-        #     vid_cat_rest = df_res_vid.groupby(by=["Category"])["post_score"].mean()
-        #     st.dataframe(vid_cat_rest)
-
-
-
-
+        return df
+    
     except Exception as e:
-        st.error(f"Error: {e}")
-#metrics
+        return st.error(e)
+    
+        
+def transform_silver(df):
+    try:
+        df_math = df.merge(df_bench, on="Type content", how="left")
+        df_math["Weergaven_result"] = df_math["Weergaven"]/df_math["B_Weergaven_LI"]
+        df_math["CTR_result"] = df_math["Doorklikfrequentie (CTR)"]/df_math["B_Avg CTR_ALT"]
+        df_math["NTR_result"] = df_math["Interactiepercentage"]/df_math["B_engagement rate_LI"]
+        df_math["post_score"] = round(((0.33*df_math["Weergaven_result"]) + (0.33*df_math["NTR_result"]) + (0.33*df_math["CTR_result"])), 2)
 
+        st.session_state.df_calc = df_math[["Titel bijdrage", "Aangemaakt", "Type content", "Category", "Weergaven_result", "CTR_result","NTR_result","post_score"]]
+
+        return st.session_state.df_calc
+    except Exception as e:
+        return st.error(e)
+
+def calc_gold_metrics(df, df2):
+    try:
+        total_views = df["Weergaven"].sum()
+        avg_CTR = df["Doorklikfrequentie (CTR)"].mean()
+        avg_NTR = df["Interactiepercentage"].mean()
+        avg_score = df2["post_score"].median()
+
+        met1, met2, met3, met4 = st.columns(4)
+
+        with met1:
+            st.metric(label='Total views', value=total_views)
+        with met2:
+            st.metric(label='Avg CTR', value=round(avg_CTR, 2))
+        with met3:
+            st.metric(label='Avg NTR', value=round(avg_NTR, 2))
+        with met4:
+            st.metric(label='Median post score', value=round(avg_score, 2))
+    except Exception as e:
+        st.error(e)
+
+
+def main():
+    st.title("SDG LinkedIn Dashboard")
+
+    uploaded_file = st.file_uploader(label="Add linkedin analytics file")
+
+    if uploaded_file is not None:
+        df_upload = load_raw(uploaded_file)
+
+        with st.expander(label="Add content type and categories", expanded=st.session_state.expander_open):
+            df_edited = st.data_editor(df_upload, hide_index=True,)
+
+            if st.button("Submit"):
+                st.session_state.df_main = df_edited
+                st.session_state.expander_open = False
+                st.rerun()
+
+        
+        if st.session_state.df_main is not None: 
+            transform_silver(st.session_state.df_main)
+
+        st.title("Main results")
+
+
+        if st.session_state.df_main is not None:
+            calc_gold_metrics(st.session_state.df_main, st.session_state.df_calc )
+
+        if st.session_state.df_calc is not None:
+            try:
+                df_categ_res = st.session_state.df_calc.groupby("Category")["post_score"].mean()
+                st.bar_chart(df_categ_res)
+            except Exception as e:
+                pass
+        
+
+        
+        
+
+# MAIN PAGE
+st.set_page_config(page_title="Linkedin Dashboard", layout="wide")
+
+# load df_main into session state
+if "df_main" not in st.session_state:
+    st.session_state.df_main = None
+
+if "expander_open" not in st.session_state:
+    st.session_state.expander_open = True
+
+if "df_calc" not in st.session_state:
+    st.session_state.df_calc = None
+
+
+main()
