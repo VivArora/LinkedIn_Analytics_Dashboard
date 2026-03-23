@@ -50,35 +50,36 @@ if li_file:
         # if st.session_state.dfx is not None:
         #     df_test = st.session_state.dfx.merge(df_bench, on="Type content", how="left")
         #     st.write(df_test)
+        try:
+            df_test["Weergaven_result"] = df_test["Weergaven"]/df_test["B_Weergaven_LI"]
+            df_test["CTR_result"] = df_test["Doorklikfrequentie (CTR)"]/df_test["B_Avg CTR_ALT"]
+            df_test["NTR_result"] = df_test["Interactiepercentage"]/df_test["B_engagement rate_LI"]
+            df_test["post_score"] = round(((0.33*df_test["Weergaven_result"]) + (0.33*df_test["NTR_result"]) + (0.33*df_test["CTR_result"])), 2)
 
-        df_test["Weergaven_result"] = df_test["Weergaven"]/df_test["B_Weergaven_LI"]
-        df_test["CTR_result"] = df_test["Doorklikfrequentie (CTR)"]/df_test["B_Avg CTR_ALT"]
-        df_test["NTR_result"] = df_test["Interactiepercentage"]/df_test["B_engagement rate_LI"]
-        df_test["post_score"] = round(((0.33*df_test["Weergaven_result"]) + (0.33*df_test["NTR_result"]) + (0.33*df_test["CTR_result"])), 2)
+            df_results = df_test[["Titel bijdrage", "Aangemaakt", "Type content", "Category", "Weergaven_result", "CTR_result","NTR_result","post_score"]]
 
-        df_results = df_test[["Titel bijdrage", "Aangemaakt", "Type content", "Category", "Weergaven_result", "CTR_result","NTR_result","post_score"]]
-
-        total_views = st.session_state.dfx["Weergaven"].sum()
-        avg_CTR = st.session_state.dfx["Doorklikfrequentie (CTR)"].mean()
-        avg_NTR = st.session_state.dfx["Interactiepercentage"].mean()
-        avg_score = df_results["post_score"].median()
-
-
-        met1, met2, met3, met4 = st.columns(4)
-
-        with met1:
-            st.metric(label='Total views', value=total_views)
-        with met2:
-            st.metric(label='Avg CTR', value=round(avg_CTR, 2))
-        with met3:
-            st.metric(label='Avg NTR', value=round(avg_NTR, 2))
-        with met4:
-            st.metric(label='Median post score', value=round(avg_score, 2))
+            total_views = st.session_state.dfx["Weergaven"].sum()
+            avg_CTR = st.session_state.dfx["Doorklikfrequentie (CTR)"].mean()
+            avg_NTR = st.session_state.dfx["Interactiepercentage"].mean()
+            avg_score = df_results["post_score"].median()
 
 
-        df_categ_res = df_results.groupby("Category")["post_score"].mean()
-        st.bar_chart(df_categ_res)
+            met1, met2, met3, met4 = st.columns(4)
 
+            with met1:
+                st.metric(label='Total views', value=total_views)
+            with met2:
+                st.metric(label='Avg CTR', value=round(avg_CTR, 2))
+            with met3:
+                st.metric(label='Avg NTR', value=round(avg_NTR, 2))
+            with met4:
+                st.metric(label='Median post score', value=round(avg_score, 2))
+
+
+            df_categ_res = df_results.groupby("Category")["post_score"].mean()
+            st.bar_chart(df_categ_res)
+        except:
+            pass
         # txt_cat_rest = df_res_text.groupby(by=["Category"])["post_score"].mean()
         # st.dataframe(txt_cat_rest)
         
