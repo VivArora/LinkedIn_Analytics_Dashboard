@@ -133,14 +133,10 @@ def main():
         if st.session_state.df_main is not None: 
             transform_silver(st.session_state.df_main)
 
-
-
-
         if st.session_state.df_calc is not None:
             st.title("Main results")
             calc_gold_metrics(st.session_state.df_main, st.session_state.df_calc )
 
-        if st.session_state.df_calc is not None:
             st.subheader("Post score per Category")
             gold_categ_BC(st.session_state.df_calc)
 
