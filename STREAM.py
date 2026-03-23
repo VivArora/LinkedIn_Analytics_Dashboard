@@ -26,35 +26,23 @@ if li_file:
         with st.expander(label="Enter Type content and categorize each post"):
             edited_df = st.data_editor(df)
 
-        if st.button(label="Submit changes"):
-
-            if "dfx" not in st.session_state:
-                st.session_state.dfx = edited_df 
+        if st.button("Submit changes"):
+            st.session_state.dfx = edited_df
             st.success("Data loaded")
 
 
-        # if "dfx" in st.session_state:
-        #     st.write(st.session_state["dfx"])
-
-
-        # with st.expander(label="Enter Content types and Categories"):
-        #     if "df2" not in st.session_state:
-        #         dfx = st.data_editor(df)
-        #         st.session_state.df2 = dfx
-
-        #     if st.button(label="Submit changes"):
-        #         st.session_state.df2 = st.session_state.df2.to_csv(li_file)
-
-
-        benchmark_data = {
+    benchmark_data = {
         "Type content":["Video", "Text"],
         "B_Weergaven_LI":[355, 300],
         "B_Avg CTR_ALT":[0.0805, 0.0805],
-        "B_engagement rate_LI":[0.06, 0.045]}
+        "B_engagement rate_LI":[0.06, 0.045]
+    }
 
+    df_bench = pd.DataFrame(benchmark_data)
 
-        df_bench = pd.DataFrame.from_dict(benchmark_data)
+    if st.session_state.dfx is not None:
         df_test = st.session_state.dfx.merge(df_bench, on="Type content", how="left")
+        st.write(df_test)
 
         df_test["Weergaven_result"] = df_test["Weergaven"]/df_test["B_Weergaven_LI"]
         df_test["CTR_result"] = df_test["Doorklikfrequentie (CTR)"]/df_test["B_Avg CTR_ALT"]
