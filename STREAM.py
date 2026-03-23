@@ -1,3 +1,43 @@
+"""
+- refactor code into functions
+- API key integration so data doesnt have to be uploaded
+- titles
+- improved layout and flow
+- update variable and metric names
+- add helpers to each section
+- update categ section
+    - add just title, content type, post date
+- create content type and category json config file
+- 
+- add followers as main metric
+- add date filters
+    - month
+        - week
+    - category
+    - type
+
+STEPS
+- upload document
+- read data
+- add new rows to master file
+- for new rows, show category and type columns to be added
+- once values are submitted, remove editor from view
+    - if nr of rows in new_rows_data_editor = 0, dont show editor
+- start main dashboard
+- filter for month and weeks
+- show metrics
+    - based on selected filter
+        - total views, median(?) performance relative to benchmark, nr of followers gains
+            - for all, have relative gain from pervious period
+- detailed breakdown
+    - some sort of plot per post 
+    - per content type
+        - per category
+            - top 3 latest posts and post score
+            - 
+    
+"""
+
 
 import pandas as pd
 import streamlit as st
@@ -6,6 +46,9 @@ import streamlit as st
 
 st.set_page_config(page_title="Linkedin Dashboard", layout="wide")
 ## TYPE CONTENT AND ADD FOR CATEGORY
+
+
+
 
 if "dfx" not in st.session_state:
     st.session_state.dfx = None
@@ -23,9 +66,12 @@ if li_file:
         df["Category"] = "Enter Category"
         df = df[["Titel bijdrage", "Type content", "Category", "Weergaven", "Doorklikfrequentie (CTR)", "Interactiepercentage", "Aangemaakt"]]
         #st.success("df loaded")
-        with st.expander(label="Enter Type content and categorize each post"):
-            edited_df = st.data_editor(df)
-
+        with st.expander(label="Enter Type content and categorize each post", ):
+            # FEATURE
+            ## read the date range and create filters for month and week
+            # [["Aangemaakt","Titel bijdrage", "Type content", "Category"]]
+            edited_df = st.data_editor(df, hide_index=True, )
+        
         if st.button("Submit changes"):
             st.session_state.dfx = edited_df
             st.success("Data loaded")
@@ -44,12 +90,7 @@ if li_file:
         if st.session_state.dfx is not None:
             df_test = st.session_state.dfx.merge(df_bench, on="Type content", how="left")
 
-        if df_test is not None:
-            st.write(df_test)
-
-        # if st.session_state.dfx is not None:
-        #     df_test = st.session_state.dfx.merge(df_bench, on="Type content", how="left")
-        #     st.write(df_test)
+        
         try:
             df_test["Weergaven_result"] = df_test["Weergaven"]/df_test["B_Weergaven_LI"]
             df_test["CTR_result"] = df_test["Doorklikfrequentie (CTR)"]/df_test["B_Avg CTR_ALT"]
@@ -78,8 +119,8 @@ if li_file:
 
             df_categ_res = df_results.groupby("Category")["post_score"].mean()
             st.bar_chart(df_categ_res)
-        except:
-            pass
+        except Exception as e:
+            st.error(f'error: {e}')
         # txt_cat_rest = df_res_text.groupby(by=["Category"])["post_score"].mean()
         # st.dataframe(txt_cat_rest)
         
