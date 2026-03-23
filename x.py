@@ -74,24 +74,30 @@ def main():
     if uploaded_file is not None:
         df_upload = load_raw(uploaded_file)
 
-        if df_upload is not None:
+        with st.expander(label="Add content type and categories", expanded=st.session_state.expander_open):
+            df_edited = st.data_editor(df_upload, hide_index=True,)
 
-            with st.expander(label="", expanded=st.session_state.expander_open):
-                df_edited = st.data_editor(df_upload, hide_index=True,)
-
-                if st.button("Submit"):
-                    st.session_state.df_main = df_edited
-                    st.session_state.expander_open = False
-                    st.success("loaded")
-                    st.rerun()
+            if st.button("Submit"):
+                st.session_state.df_main = df_edited
+                st.session_state.expander_open = False
+                st.rerun()
 
         
         if st.session_state.df_main is not None: 
             transform_silver(st.session_state.df_main)
 
+        st.title("Main results")
+
+
         if st.session_state.df_main is not None:
             calc_gold_metrics(st.session_state.df_main, st.session_state.df_calc )
 
+        if st.session_state.df_calc is not None:
+            try:
+                df_categ_res = st.session_state.df_calc.groupby("Category")["post_score"].mean()
+                st.bar_chart(df_categ_res)
+            except Exception as e:
+                pass
         
 
         
