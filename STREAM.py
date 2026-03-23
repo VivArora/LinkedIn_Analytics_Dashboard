@@ -42,7 +42,14 @@ STEPS
 import pandas as pd
 import streamlit as st
 
+benchmark_data = {
+    "Type content":["Video", "Text"],
+    "B_Weergaven_LI":[355, 300],
+    "B_Avg CTR_ALT":[0.0805, 0.0805],
+    "B_engagement rate_LI":[0.06, 0.045]
+}
 
+df_bench = pd.DataFrame(benchmark_data)
 
 st.set_page_config(page_title="Linkedin Dashboard", layout="wide")
 ## TYPE CONTENT AND ADD FOR CATEGORY
@@ -77,14 +84,7 @@ if li_file:
             st.success("Data loaded")
 
 
-        benchmark_data = {
-            "Type content":["Video", "Text"],
-            "B_Weergaven_LI":[355, 300],
-            "B_Avg CTR_ALT":[0.0805, 0.0805],
-            "B_engagement rate_LI":[0.06, 0.045]
-        }
 
-        df_bench = pd.DataFrame(benchmark_data)
         df_test = None
 
         if st.session_state.dfx is not None:
