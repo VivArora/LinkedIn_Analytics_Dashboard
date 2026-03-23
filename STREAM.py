@@ -39,7 +39,7 @@ if li_file:
         }
 
         df_bench = pd.DataFrame(benchmark_data)
-
+        df_test = None
         if st.session_state.dfx is not None:
             df_test = st.session_state.dfx.merge(df_bench, on="Type content", how="left")
             st.write(df_test)
