@@ -41,15 +41,15 @@ STEPS
 
 import pandas as pd
 import streamlit as st
-
+#from streamlit_dynamic_filters import DynamicFilters
 
 # DEFINE VARIABLES
 
 benchmark_data = {
-    "Type content":["Video", "Text"],
-    "B_Weergaven_LI":[355, 300],
-    "B_Avg CTR_ALT":[0.0805, 0.0805],
-    "B_engagement rate_LI":[0.06, 0.045]
+    "Type content":["Video", "Text", "Image", "Multi image", "Link", "Poll"],
+    "B_Weergaven_LI":[355, 300, 315, 490, 235, 340],
+    "B_Avg CTR_ALT":[0.0805, 0.0805, 0.0805,0.0805,0.0805,0.0805],
+    "B_engagement rate_LI":[0.06, 0.045, 0.053, 0.0645, 0.0325, 0.042]
 }
 
 df_bench = pd.DataFrame(benchmark_data)
@@ -91,37 +91,47 @@ def calc_gold_metrics(df, df2):
         total_views = df["Weergaven"].sum()
         avg_CTR = df["Doorklikfrequentie (CTR)"].mean()
         avg_NTR = df["Interactiepercentage"].mean()
-        avg_score = df2["post_score"].median()
+        avg_score = df2["post_score"].mean()
 
         met1, met2, met3, met4 = st.columns(4)
 
         with met1:
-            st.metric(label='Total views', value=total_views)
+            st.metric(label='Total views', value=total_views, help="Total post view over export period")
         with met2:
-            st.metric(label='Avg CTR', value=round(avg_CTR, 2))
+            st.metric(label='Avg CTR (%)', value=round(avg_CTR*100, 2), help="Average CTR of posts over export period")
         with met3:
-            st.metric(label='Avg NTR', value=round(avg_NTR, 2))
+            st.metric(label='Avg Engagement (%)', value=round(avg_NTR*100, 2), help="Average engagement rate of posts over export period")
         with met4:
-            st.metric(label='Median post score', value=round(avg_score, 2))
+            st.metric(label='Avg Post Score (x)', value=round(avg_score, 2), help="The post score indicates the performance of posts relative to linkedin benchmarks (thus a post score of 2 means the post performs 2x better than the benchmark)")
     except Exception as e:
         st.error(e)
 
 def gold_categ_BC(df):
     try:
         df_categ_res = df.groupby("Category")["post_score"].mean()
+        st.write("The post score is a weighted average of the views, CTR and engagement rate of each post. The score indicates the performance of a post relative to a standard benchmark. Thus, a post score of 2 means that the post performs 2x better than the benchmark")
         st.bar_chart(df_categ_res)
     except Exception as e:
         st.error(e)
 
 def main():
     st.title("SDG LinkedIn Dashboard")
+    st.write("This is a platform to upload an export of linkedin analytics for month end performance reporting")
+    
+    st.subheader("Instructions")
+    st.write("1) Upload the linkedin export file")
+    
+    
 
     uploaded_file = st.file_uploader(label="Add linkedin analytics file")
 
     if uploaded_file is not None:
         df_upload = load_raw(uploaded_file)
 
-        with st.expander(label="Add content type and categories", expanded=st.session_state.expander_open):
+        st.write("2) In the drop down menu below, enter the category values (and edit the content type if needed) per post")
+        st.write("3) Below the table in the drop down menu, press submit when all values are added ")
+
+        with st.expander(label="Manually add values to columns **`Type Content`** and **`Categories`** to categorize posts, then press `submit`", expanded=st.session_state.expander_open):
             df_edited = st.data_editor(df_upload, hide_index=True,)
 
             if st.button("Submit"):
@@ -135,10 +145,13 @@ def main():
 
         if st.session_state.df_calc is not None:
             st.title("Main results")
-            calc_gold_metrics(st.session_state.df_main, st.session_state.df_calc )
+            calc_gold_metrics(st.session_state.df_main, st.session_state.df_calc)
 
-            st.subheader("Post score per Category")
+            st.subheader("Average post-score per Category")
             gold_categ_BC(st.session_state.df_calc)
+
+            st.subheader("")
+            st.dataframe(st.session_state.df_calc)
 
         
 
