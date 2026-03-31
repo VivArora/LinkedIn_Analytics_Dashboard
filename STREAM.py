@@ -147,9 +147,14 @@ def main():
             st.subheader("Average post-score per Category")
             gold_categ_BC(st.session_state.df_calc)
 
-            st.subheader("")
-            st.dataframe(st.session_state.df_calc)
+            with st.expander(label="Table view of results (graph view WIP)"):
+                st.subheader("Benchmark breakdown")
+                st.dataframe(st.session_state.df_calc)
 
+                st.subheader("Post Data")
+                st.dataframe(st.session_state.df_main)
+
+            
         
 
         
