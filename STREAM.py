@@ -65,45 +65,20 @@ def load_raw(file):
         df["Type content"] = df["Type content"].fillna("Text")
         df["Category"] = "Enter Category"
         df = df[["Titel bijdrage", "Type content", "Category", "Weergaven", "Doorklikfrequentie (CTR)", "Interactiepercentage", "Aangemaakt"]]
-        #st.success("df loaded")
-        with st.expander(label="Enter Type content and categorize each post"):
-            edited_df = st.data_editor(df)
-
-        if st.button(label="Submit changes"):
-            st.session_state["dfx"] = edited_df 
-            st.success("Data Updated")
-
-
-        # if "dfx" in st.session_state:
-        #     st.write(st.session_state["dfx"])
-
-
-        # with st.expander(label="Enter Content types and Categories"):
-        #     if "df2" not in st.session_state:
-        #         dfx = st.data_editor(df)
-        #         st.session_state.df2 = dfx
-
-        #     if st.button(label="Submit changes"):
-        #         st.session_state.df2 = st.session_state.df2.to_csv(li_file)
-
-
-        benchmark_data = {
-        "Type content":["Video", "Text"],
-        "B_Weergaven_LI":[355, 300],
-        "B_Avg CTR_ALT":[0.0805, 0.0805],
-        "B_engagement rate_LI":[0.06, 0.045]}
-
-
-        df_bench = pd.DataFrame.from_dict(benchmark_data)
-        df_test = st.session_state["dfx"].merge(df_bench, on="Type content", how="left")
-
-        df_test["Weergaven_result"] = df_test["Weergaven"]/df_test["B_Weergaven_LI"]
-        df_test["CTR_result"] = df_test["Doorklikfrequentie (CTR)"]/df_test["B_Avg CTR_ALT"]
-        df_test["NTR_result"] = df_test["Interactiepercentage"]/df_test["B_engagement rate_LI"]
-        df_test["post_score"] = round(((0.33*df_test["Weergaven_result"]) + (0.33*df_test["NTR_result"]) + (0.33*df_test["CTR_result"])), 2)
-
+        return df
+    
+    except Exception as e:
+        return st.error(e)
+    
+        
+def transform_silver(df):
+    try:
+        df_math = df.merge(df_bench, on="Type content", how="left")
+        df_math["Weergaven_result"] = df_math["Weergaven"]/df_math["B_Weergaven_LI"]
+        df_math["CTR_result"] = df_math["Doorklikfrequentie (CTR)"]/df_math["B_Avg CTR_ALT"]
+        df_math["NTR_result"] = df_math["Interactiepercentage"]/df_math["B_engagement rate_LI"]
+        df_math["post_score"] = round(((0.33*df_math["Weergaven_result"]) + (0.33*df_math["NTR_result"]) + (0.33*df_math["CTR_result"])), 2)
         st.session_state.df_calc = df_math[["Titel bijdrage", "Aangemaakt", "Type content", "Category", "Weergaven_result", "CTR_result","NTR_result","post_score"]]
-
         return st.session_state.df_calc
     except Exception as e:
         return st.error(e)
