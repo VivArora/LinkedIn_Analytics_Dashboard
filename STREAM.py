@@ -126,11 +126,10 @@ def main():
         df_upload = load_raw(uploaded_file)
 
         st.write("2) In the drop down menu below, enter the category values (and edit the content type if needed) per post")
-        st.write("3) Below the table in the drop down menu, press submit when all values are added ")
 
-        with st.expander(label="Manually add values to columns **`Type Content`** and **`Categories`** to categorize posts, then press `submit`", expanded=st.session_state.expander_open):
+        with st.expander(label="Manually add values to columns **`Type Content`** and **`Categories`** to categorize posts by clicking the cell and typing", expanded=st.session_state.expander_open):
             df_edited = st.data_editor(df_upload, hide_index=True,)
-
+            st.write("3) Press submit when all values are added to view results")
             if st.button("Submit"):
                 st.session_state.df_main = df_edited
                 st.session_state.expander_open = False
